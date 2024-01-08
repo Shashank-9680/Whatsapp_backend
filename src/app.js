@@ -7,6 +7,8 @@ import cookieParser from "cookie-parser";
 import compression from "compression";
 import fileUpload from "express-fileupload";
 import cors from "cors";
+import createHttpError from "http-errors";
+import routes from "./routes/index.js";
 dotenv.config();
 const app = express();
 //morgan
@@ -29,9 +31,21 @@ app.use(compression());
 app.use(fileUpload({ useTempFiles: true }));
 //cors
 app.use(cors());
-app.get("/", (req, res) => {
-  res.send("this is a server");
+//api v1 routes
+app.use("/api/v1", routes);
+
+app.use(async (req, res, next) => {
+  next(createHttpError.NotFound("this route does not exist"));
 });
-const PORT = process.env.PORT || 8000;
+//error handling
+app.use(async (err, req, res, next) => {
+  res.status(err.status || 500);
+  res.send({
+    error: {
+      status: err.status || 500,
+      message: err.message,
+    },
+  });
+});
 
 export default app;
