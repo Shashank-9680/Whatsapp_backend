@@ -2,7 +2,7 @@ import { createUser, signUser } from "../services/auth.service.js";
 import createHttpError from "http-errors";
 import { generateToken, verifyToken } from "../services/token.service.js";
 import { findUser } from "../services/user.service.js";
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
   try {
     const { name, password, email, picture, status } = req.body;
     const newUser = await createUser({
@@ -43,7 +43,7 @@ export const register = async (req, res) => {
   }
 };
 
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await signUser(email, password);
@@ -80,7 +80,7 @@ export const login = async (req, res) => {
   }
 };
 
-export const logout = async (req, res) => {
+export const logout = async (req, res, next) => {
   try {
     res.clearCookie("refreshtoken", { path: "/api/v1/auth/refreshtoken" });
     res.json({
@@ -90,7 +90,7 @@ export const logout = async (req, res) => {
     next(error);
   }
 };
-export const refreshToken = async (req, res) => {
+export const refreshToken = async (req, res, next) => {
   try {
     const refresh_token = req.cookies.refreshtoken;
     if (!refresh_token) throw createHttpError.Unauthorized("Please login.");
