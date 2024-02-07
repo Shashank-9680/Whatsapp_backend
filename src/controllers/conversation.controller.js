@@ -10,7 +10,7 @@ import { findUser } from "../services/user.service.js";
 
 export const create_open_conversation = async (req, res, next) => {
   try {
-    const sender_id = req.user.user_id;
+    const sender_id = req.user.userId;
     const { receiver_id } = req.body;
     //check if there is a reciever id or not
     if (!receiver_id) {
@@ -27,9 +27,10 @@ export const create_open_conversation = async (req, res, next) => {
     if (existed_conversation) {
       res.json(existed_conversation);
     } else {
-      let reciever_user = await findUser(receiver_id);
+      let receiver_user = await findUser(receiver_id);
       let convoData = {
-        name: reciever_user.name,
+        name: receiver_user.name,
+        picture: receiver_user.picture,
         isGroup: false,
         users: [sender_id, receiver_id],
       };
@@ -41,8 +42,8 @@ export const create_open_conversation = async (req, res, next) => {
       );
       res.json(populatedConvo);
     }
-  } catch {
-    error(next);
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -51,7 +52,7 @@ export const getConversations = async (req, res, next) => {
     const user_id = req.user.userId;
     const conversations = await getUserConversations(user_id);
     res.status(200).json(conversations);
-  } catch {
-    error(next);
+  } catch (error) {
+    next(error);
   }
 };
