@@ -1,5 +1,5 @@
 import createHttpError from "http-errors";
-import { searchUsers as searchUsersService } from "../services/user.service";
+import { searchUsers as searchUsersService } from "../services/user.service.js";
 export const searchUsers = async (req, res, next) => {
   try {
     const keyword = req.query.search;
@@ -7,7 +7,7 @@ export const searchUsers = async (req, res, next) => {
       logger.error("Please add a search query first");
       throw createHttpError.BadRequest("Oops...Something Went Wrong!");
     }
-    const users = await searchUsersService(keyword);
+    const users = await searchUsersService(keyword, req.user.userId);
     res.status(200).json(users);
   } catch (error) {
     next(error);
