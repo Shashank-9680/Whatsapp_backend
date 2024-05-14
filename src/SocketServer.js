@@ -3,13 +3,15 @@ let onlineUsers = [];
 export default function (socket, io) {
   // user joins or opens the application
   socket.on("join", (user) => {
+    console.log("user-------", user);
     socket.join(user);
     // add joined user to online users
     if (!onlineUsers.some((u) => u.userId === user)) {
       onlineUsers.push({ userId: user, socketId: socket.id });
-      // send online users to frontend
-      io.emit("get-online-users", onlineUsers);
     }
+    // send online users to frontend
+    io.emit("get-online-users", onlineUsers);
+    io.emit("setup socket", socket.id);
   });
   // socket disconnect
   socket.on("disconnect", () => {
@@ -41,5 +43,24 @@ export default function (socket, io) {
   socket.on("stop typing", (conversation) => {
     console.log("stop typing.....");
     socket.in(conversation).emit("stop typing");
+  });
+  //call user
+  socket.on("call user", (data) => {
+    let userId = data.userToCall;
+    let userSocketId = onlineUsers.find((user) => user.userId == userId);
+    io.to(userSocketId.socketId).emit("call user", {
+      signal: data.signal,
+      from: data.from,
+      name: data.name,
+      picture: data.picture,
+    });
+  });
+  // answer call
+  socket.on("answer call", (data) => {
+    io.to(data.to).emit("call accepted", data.signal);
+  });
+  //ending the call
+  socket.on("leaveCall", (id) => {
+    io.to(id).emit("end call");
   });
 }

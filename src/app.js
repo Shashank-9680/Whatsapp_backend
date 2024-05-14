@@ -9,14 +9,32 @@ import fileUpload from "express-fileupload";
 import cors from "cors";
 import createHttpError from "http-errors";
 import routes from "./routes/index.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
 dotenv.config();
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
 const app = express();
+// app.get("/*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "build", "index.html"));
+// });
 //morgan
+
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
 }
+
 //helmet
-app.use(helmet());
+app.use(helmet({ crossOriginEmbedderPolicy: false, originAgentCluster: true }));
+app.use(
+  helmet.contentSecurityPolicy({
+    useDefaults: true,
+    directives: {
+      "img-src": ["'self'", "https: data: blob:"],
+    },
+  })
+);
 //parse json request url
 app.use(express.json());
 //parse json request body
@@ -33,7 +51,10 @@ app.use(fileUpload({ useTempFiles: true }));
 app.use(cors());
 //api v1 routes
 app.use("/api/v1", routes);
-
+app.use(express.static(path.resolve(__dirname, "../build")));
+app.get("/*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../build", "index.html"));
+});
 app.use(async (req, res, next) => {
   next(createHttpError.NotFound("this route does not exist"));
 });

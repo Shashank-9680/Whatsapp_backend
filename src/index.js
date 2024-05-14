@@ -3,10 +3,14 @@ import { Server } from "socket.io";
 import app from "./app.js";
 import logger from "./configs/logger.config.js";
 import SocketServer from "./SocketServer.js";
+import path from "path";
+import express from "express";
+
 //env variables
 const { DATABASE_URL } = process.env;
 const PORT = process.env.PORT || 8000;
 //mongodb connection
+
 mongoose
   .connect(DATABASE_URL, {
     useNewUrlParser: true,
